@@ -74,7 +74,7 @@ double jDE::calculateNewCR(double CRi, int dist) {
 		rand = distribution(generator);
 		rand2 = distribution(generator);
 	} else if(dist == CAUCHY) {
-		cauchy_distribution<double> distribution(5.0,1.0);
+		cauchy_distribution<double> distribution(0.0,1.0);
 		rand = distribution(generator);
 		rand2 = distribution(generator);
 	} else if(dist == LOGISTIC) {
@@ -286,6 +286,34 @@ double jDE::ackleyFunction(vector<double> x) {
 
    	return result;
 
+}
+
+double jDE::rastriginFunction(vector<double> x) {
+
+	/* Defining fitness function - Rastrigin's function */
+
+	int numDim = x.size(), i;
+	double result = 0;
+
+	for(i = 0; i < numDim; i++) {
+        result += pow(x[i], 2.0) - 10 * cos(2 * M_PI * x[i]) + 10;
+    }
+
+    return result;
+}
+
+double jDE::eggholderFunction(vector<double> x) {
+
+	/* Defining fitness function - Eggholder's function */
+
+	double result = 0.0;
+	int numDim = x.size(), i;
+
+	for(i = 0; i < numDim-1; i++) {
+		result += -(x[i+1] + 47.0) * sin(sqrt(fabs(x[i+1] + x[i] * 0.5 + 47.0))) + sin(sqrt(fabs(x[i] - (x[i+1] + 47.0)))) * (-x[i]);
+	}
+	  
+	return result;
 }
 
 vector<Individual> jDE::getPopulation(){

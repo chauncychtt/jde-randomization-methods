@@ -54,4 +54,6 @@ public:
 	vector<Individual> getPopulation();
 	double kentMap(double randomNum, double m);
 	double logisticMap(double randomNum, double r);
+	double rastriginFunction(vector<double> x);
+	double eggholderFunction(vector<double> x);
 };
