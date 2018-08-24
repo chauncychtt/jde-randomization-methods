@@ -184,19 +184,31 @@ void jDE::initPopulation(int numberDim, int dist, int generations) {
 
 void jDE::mutationOperation() {
 
-	int i, j;
+	int i, j, ind1, ind2, ind3;
 	unsigned seed = chrono::system_clock::now().time_since_epoch().count();
 	default_random_engine generator(seed);
-	uniform_real_distribution<double> distribution(0.0,(double)NP);
-	uniform_real_distribution<double> secondDistribution(-5.12,5.12);
+	uniform_int_distribution<int> distribution(0,NP);
+	uniform_real_distribution<double> secondDistribution(FUNC_MIN,FUNC_MAX);
 
 	/* Using rand/1 strategy */
 	for(i = 0; i < NP; i++) {
 		population[i].trialVector.clear();
 		for(j = 0; j < population[i].x.size(); j++) {
 			/* Vi = Xrand1 + F * (Xrand2 - Xrand3) */
-			double vi = population[i].x[distribution(generator)] + population[i].F * (population[i].x[distribution(generator)] - population[i].x[distribution(generator)]);
-			while(vi < FUNC_MIN || vi > FUNC_MAX) {
+			ind1 = distribution(generator);
+			while(ind1 == j) {
+				ind1 = distribution(generator);
+			}
+			ind2 = distribution(generator);
+			while(ind2 == j || ind2 == ind1) {
+				ind2 = distribution(generator);
+			}
+			ind3 = distribution(generator);
+			while(ind3 == j || ind3 == ind1 || ind3 == ind2) {
+				ind3 = distribution(generator);
+			}
+			double vi = population[i].x[ind1] + population[i].F * (population[i].x[ind2] - population[i].x[ind3]);
+			if(vi < FUNC_MIN || vi > FUNC_MAX) {
 				vi = secondDistribution(generator);
 			}
 			population[i].trialVector.push_back(vi);
@@ -210,12 +222,14 @@ void jDE::crossoverOperation() {
 	unsigned seed = chrono::system_clock::now().time_since_epoch().count();
 	default_random_engine generator(seed);
 	uniform_real_distribution<double> distribution(0.0,1.0);
-	uniform_real_distribution<double> secondDistribution(0.0,(double)NP);
+	uniform_int_distribution<int> secondDistribution(0,NP);
+	double jrand;
 
 	/* Binary crossover */
 	for(i = 0; i < NP; i++) {
+		jrand = secondDistribution(generator);
 		for(j = 0; j < population[i].x.size(); j++) {
-			if(distribution(generator) <= population[i].CR || j == secondDistribution(generator)) {
+			if(distribution(generator) <= population[i].CR || j == jrand) {
 				population[i].trialVector[j] = population[i].trialVector[j];
 			} else {
 				population[i].trialVector[j] = population[i].x[j];
