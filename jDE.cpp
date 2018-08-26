@@ -1,5 +1,5 @@
 /*
-	jDE algorithm implementation with different randomisation methods.
+	jDE algorithm implementation with different randomization methods.
 	Author: Luiza Engler Stadelhofer
 
 	To compile: make
@@ -117,7 +117,7 @@ void jDE::initPopulation(int numberDim, int dist, int generations) {
 	ind.F = 0.5;
 	ind.CR = 0.1;
 
-	/* Randomising initial population */
+	/* Randomizing initial population */
 	for(i = 0; i < NP; i++) {
 		for(j = 0; j < numberDim; j++) {
 			if(dist == UNIFORM) {
@@ -254,7 +254,12 @@ void jDE::selectionOperation() {
 
 double jDE::sphereFunction(vector<double> x) {
 
-	/* Defining fitness function - Sphere's function */
+	/* Defining fitness function - Sphere's function
+	   Dimensions: d
+	   Domain: x ∈ [-5.12, 5.12]
+	   Global minimum: (0, ..., 0)
+	*/
+
 	int numDim = x.size();
 	double sum1 = 0, result;
 
@@ -267,7 +272,12 @@ double jDE::sphereFunction(vector<double> x) {
 
 double jDE::ackleyFunction(vector<double> x) {
 
-	/* Defining fitness function - Ackley's function */
+	/* Defining fitness function - Ackley's function 
+       Dimensions: d
+       Domain: x ∈ [-32.768, 32.768]
+       Global minimum: (0, ..., 0)
+	*/
+
 	int numDim = x.size();
 	double b = 0.2, c = 2.0*M_PI, sum1 = 0, sum2 = 0, result = 0, term1 = 0, term2 = 0, term3 = 0, a = 20;
 
@@ -290,7 +300,11 @@ double jDE::ackleyFunction(vector<double> x) {
 
 double jDE::rastriginFunction(vector<double> x) {
 
-	/* Defining fitness function - Rastrigin's function */
+	/* Defining fitness function - Rastrigin's function 
+	   Dimensions: d
+	   Domain: x ∈ [-5.12, 5.12]
+	   Global minimum: (0, ..., 0)
+	*/
 
 	int numDim = x.size(), i;
 	double result = 0;
@@ -302,9 +316,30 @@ double jDE::rastriginFunction(vector<double> x) {
     return result;
 }
 
+double jDE::rosenbrockFunction(vector<double> x) {
+	/* Defining fitness function - Rosenbrock's function 
+	   Dimensions: d
+	   Domain: x ∈ [-5, 10]
+	   Global minimum: (1, ..., 1)
+	*/	
+
+	double result = 0.0;
+	int numDim = x.size(), i;
+
+	for(i = 0; i < numDim-1; i++) {
+        result += 100.0 * pow((x[i+1] - pow(x[i],2.0)),2) + pow((1.0 - x[i]),2);
+    }
+
+    return result;
+}
+
 double jDE::eggholderFunction(vector<double> x) {
 
-	/* Defining fitness function - Eggholder's function */
+	/* Defining fitness function - Eggholder's function 
+	   Dimensions: 2
+	   Domain: x ∈ [-512, 512]
+	   Global minimum: (512, 404.2319)
+	*/
 
 	double result = 0.0;
 	int numDim = x.size(), i;

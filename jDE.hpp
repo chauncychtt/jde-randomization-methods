@@ -1,5 +1,5 @@
 /*
-	jDE algorithm implementation with different randomisation methods.
+	jDE algorithm implementation with different randomization methods.
 	Author: Luiza Engler Stadelhofer
 	
 	To compile: make
@@ -55,5 +55,6 @@ public:
 	double kentMap(double randomNum, double m);
 	double logisticMap(double randomNum, double r);
 	double rastriginFunction(vector<double> x);
+	double rosenbrockFunction(vector<double> x);
 	double eggholderFunction(vector<double> x);
 };

@@ -1,5 +1,5 @@
 /*
-	jDE algorithm implementation with different randomisation methods.
+	jDE algorithm implementation with different randomization methods.
 	Author: Luiza Engler Stadelhofer
 	
 	To compile: make
