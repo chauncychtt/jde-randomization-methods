@@ -14,7 +14,7 @@ int main() {
 	jDE ex;
 	/* First parameter is number of dimentions, second is type of
 	   distribution and third is number of generations */
-	ex.initPopulation(100, 1, 100000);
+	ex.initPopulation(100, 5, 100000);
 
 	return 0;
 }

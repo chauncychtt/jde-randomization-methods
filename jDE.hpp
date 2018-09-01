@@ -17,8 +17,8 @@
 #define LOGISTIC 4
 #define KENT 5
 #define RAND_MAX 1.0
-#define FUNC_MIN -5.12 // For the sphere function
-#define FUNC_MAX 5.12 // For the sphere function
+#define FUNC_MIN -32.768 // For the sphere function
+#define FUNC_MAX 32.768 // For the sphere function
 
 #include <random>
 #include <vector>
@@ -26,6 +26,7 @@
 #include <iostream>
 #include <numeric>
 #include <cmath>
+#include <fstream>
 
 using namespace std;
 
@@ -46,8 +47,8 @@ public:
 	double calculateNewF(double Fi, int dist);
 	double calculateNewCR(double CRi, int dist);
 	void initPopulation(int numberDim, int dist, int generations);
-	void mutationOperation();
-	void crossoverOperation();
+	void mutationOperation(int dist);
+	void crossoverOperation(int dist);
 	void selectionOperation();
 	double sphereFunction(vector<double> x);
 	double ackleyFunction(vector<double> x);

@@ -29,7 +29,7 @@ double jDE::calculateNewF(double Fi, int dist) {
 		rand = distribution(generator);
 		rand2 = distribution(generator);
 	} else if(dist == CAUCHY) {
-		cauchy_distribution<double> distribution(5.0,1.0);
+		cauchy_distribution<double> distribution(0.0,2.0);
 		rand = distribution(generator);
 		rand2 = distribution(generator);
 	} else if(dist == LOGISTIC) {
@@ -74,7 +74,7 @@ double jDE::calculateNewCR(double CRi, int dist) {
 		rand = distribution(generator);
 		rand2 = distribution(generator);
 	} else if(dist == CAUCHY) {
-		cauchy_distribution<double> distribution(0.0,1.0);
+		cauchy_distribution<double> distribution(0.0,2.0);
 		rand = distribution(generator);
 		rand2 = distribution(generator);
 	} else if(dist == LOGISTIC) {
@@ -114,14 +114,14 @@ void jDE::initPopulation(int numberDim, int dist, int generations) {
 	double rand;
 	
 	/* Initializing parameters F and CR */
-	ind.F = 0.5;
-	ind.CR = 0.1;
+	ind.F = 1.0;
+	ind.CR = 0.9;
 
 	/* Randomizing initial population */
 	for(i = 0; i < NP; i++) {
 		for(j = 0; j < numberDim; j++) {
 			if(dist == UNIFORM) {
-				uniform_real_distribution<double> distribution(0.0,1.0);
+				uniform_real_distribution<double> distribution(FUNC_MIN,FUNC_MAX);
 				x.push_back(distribution(generator));
 			} else if(dist == GAUSSIAN) {
 				normal_distribution<double> distribution(0.0,1.0);
@@ -131,7 +131,7 @@ void jDE::initPopulation(int numberDim, int dist, int generations) {
 				}
 				x.push_back(rand);
 			} else if(dist == CAUCHY) {
-				cauchy_distribution<double> distribution(5.0,1.0);
+				cauchy_distribution<double> distribution(0.0,2.0);
 				rand = distribution(generator);
 				while(rand < FUNC_MIN || rand > FUNC_MAX) {
 					rand = distribution(generator);
@@ -161,6 +161,9 @@ void jDE::initPopulation(int numberDim, int dist, int generations) {
 		ind.x.clear();
 	}
 
+
+	ofstream outdata;
+	outdata.open("Results.ods");
 	for(i = 0; i < generations; i++) {
 		cout << "Generation: " << i << endl;
 		for(j = 0; j < NP; j++) {
@@ -168,68 +171,223 @@ void jDE::initPopulation(int numberDim, int dist, int generations) {
 			population[j].CR = calculateNewCR(population[j].CR, dist);
 		}
 
-		mutationOperation();
-		crossoverOperation();
+		mutationOperation(dist);
+		crossoverOperation(dist);
 		selectionOperation();
 
-		for (int i = 0; i < NP; ++i){
+		if(i == generations-1) {
+			for (int i = 0; i < NP; ++i){
+				for (int j = 0; j < numberDim; ++j){
+					outdata << population[i].x[j] << "\t";
+				}
+				outdata << endl;			
+			}
+		}
+
+		/*for (int i = 0; i < NP; ++i){
 			for (int j = 0; j < numberDim; ++j){
 				cout << population[i].x[j] << " ";
 			}
 			cout << endl;
 		}
-		cout << endl;
+		cout << endl;*/
 	}
 }
 
-void jDE::mutationOperation() {
+void jDE::mutationOperation(int dist) {
 
 	int i, j, ind1, ind2, ind3;
 	unsigned seed = chrono::system_clock::now().time_since_epoch().count();
 	default_random_engine generator(seed);
-	uniform_int_distribution<int> distribution(0,NP);
 	uniform_real_distribution<double> secondDistribution(FUNC_MIN,FUNC_MAX);
+	uniform_real_distribution<double> uniformDistribution(0.0,(double)NP);
+	normal_distribution<double> normalDistribution(0.0,1.0);
+	cauchy_distribution<double> cauchyDistribution(0.0,2.0);
 
-	/* Using rand/1 strategy */
-	for(i = 0; i < NP; i++) {
-		population[i].trialVector.clear();
-		for(j = 0; j < population[i].x.size(); j++) {
-			/* Vi = Xrand1 + F * (Xrand2 - Xrand3) */
-			ind1 = distribution(generator);
-			while(ind1 == j) {
-				ind1 = distribution(generator);
+	if(dist == UNIFORM) {
+		/* Using rand/1 strategy */
+		for(i = 0; i < NP; i++) {
+			population[i].trialVector.clear();
+			for(j = 0; j < population[i].x.size(); j++) {
+				/* Vi = Xrand1 + F * (Xrand2 - Xrand3) */
+				ind1 = uniformDistribution(generator);
+				while(ind1 == j) {
+					ind1 = uniformDistribution(generator);
+				}
+				ind2 = uniformDistribution(generator);
+				while(ind2 == j || ind2 == ind1) {
+					ind2 = uniformDistribution(generator);
+				}
+				ind3 = uniformDistribution(generator);
+				while(ind3 == j || ind3 == ind1 || ind3 == ind2) {
+					ind3 = uniformDistribution(generator);
+				}
+				double vi = population[i].x[ind1] + population[i].F * (population[i].x[ind2] - population[i].x[ind3]);
+				if(vi < FUNC_MIN || vi > FUNC_MAX) {
+					vi = secondDistribution(generator);
+				}
+				population[i].trialVector.push_back(vi);
 			}
-			ind2 = distribution(generator);
-			while(ind2 == j || ind2 == ind1) {
-				ind2 = distribution(generator);
+		}
+	} else if(dist == GAUSSIAN) {
+		/* Using rand/1 strategy */
+		for(i = 0; i < NP; i++) {
+			population[i].trialVector.clear();
+			for(j = 0; j < population[i].x.size(); j++) {
+				/* Vi = Xrand1 + F * (Xrand2 - Xrand3) */
+				ind1 = ((int)fmod(fabs(normalDistribution(generator)),NP));
+				while(ind1 == j) {
+					ind1 = ((int)fmod(fabs(normalDistribution(generator)),NP));
+				}
+				ind2 = ((int)fmod(fabs(normalDistribution(generator)),NP));
+				while(ind2 == j || ind2 == ind1) {
+					ind2 = ((int)fmod(fabs(normalDistribution(generator)),NP));
+				}
+				ind3 = ((int)fmod(fabs(normalDistribution(generator)),NP));
+				while(ind3 == j || ind3 == ind1 || ind3 == ind2) {
+					ind3 = ((int)fmod(fabs(normalDistribution(generator)),NP));
+				}
+				double vi = population[i].x[ind1] + population[i].F * (population[i].x[ind2] - population[i].x[ind3]);
+				while(vi < FUNC_MIN || vi > FUNC_MAX) {
+					vi = normalDistribution(generator);
+				}
+				//cout << "--------------- " << vi << " -------------" <<endl;
+				population[i].trialVector.push_back(vi);
 			}
-			ind3 = distribution(generator);
-			while(ind3 == j || ind3 == ind1 || ind3 == ind2) {
-				ind3 = distribution(generator);
+		}
+	} else if(dist == CAUCHY) {
+		/* Using rand/1 strategy */
+		for(i = 0; i < NP; i++) {
+			population[i].trialVector.clear();
+			for(j = 0; j < population[i].x.size(); j++) {
+				/* Vi = Xrand1 + F * (Xrand2 - Xrand3) */
+				ind1 = ((int)fmod(fabs(cauchyDistribution(generator)),NP));
+				while(ind1 == j) {
+					ind1 = ((int)fmod(fabs(cauchyDistribution(generator)),NP));
+				}
+				ind2 = ((int)fmod(fabs(cauchyDistribution(generator)),NP));
+				while(ind2 == j || ind2 == ind1) {
+					ind2 = ((int)fmod(fabs(cauchyDistribution(generator)),NP));
+				}
+				ind3 = ((int)fmod(fabs(cauchyDistribution(generator)),NP));
+				while(ind3 == j || ind3 == ind1 || ind3 == ind2) {
+					ind3 = ((int)fmod(fabs(cauchyDistribution(generator)),NP));
+				}
+				double vi = population[i].x[ind1] + population[i].F * (population[i].x[ind2] - population[i].x[ind3]);
+				while(vi < FUNC_MIN || vi > FUNC_MAX) {
+					vi = cauchyDistribution(generator);
+				}
+				population[i].trialVector.push_back(vi);
 			}
-			double vi = population[i].x[ind1] + population[i].F * (population[i].x[ind2] - population[i].x[ind3]);
-			if(vi < FUNC_MIN || vi > FUNC_MAX) {
-				vi = secondDistribution(generator);
+		}
+	} else if(dist == LOGISTIC) {
+		/* Using rand/1 strategy */
+		for(i = 0; i < NP; i++) {
+			population[i].trialVector.clear();
+			for(j = 0; j < population[i].x.size(); j++) {
+				/* Vi = Xrand1 + F * (Xrand2 - Xrand3) */
+				ind1 = ((int)fmod(fabs(logisticMap(uniformDistribution(generator), 4.0)),NP));
+				while(ind1 == j) {
+					ind1 = ((int)fmod(fabs(logisticMap(uniformDistribution(generator), 4.0)),NP));
+				}
+				ind2 = ((int)fmod(fabs(logisticMap(uniformDistribution(generator), 4.0)),NP));
+				while(ind2 == j || ind2 == ind1) {
+					ind2 = ((int)fmod(fabs(logisticMap(uniformDistribution(generator), 4.0)),NP));
+				}
+				ind3 = ((int)fmod(fabs(logisticMap(uniformDistribution(generator), 4.0)),NP));
+				while(ind3 == j || ind3 == ind1 || ind3 == ind2) {
+					ind3 = ((int)fmod(fabs(logisticMap(uniformDistribution(generator), 4.0)),NP));
+				}
+				double vi = population[i].x[ind1] + population[i].F * (population[i].x[ind2] - population[i].x[ind3]);
+				while(vi < FUNC_MIN || vi > FUNC_MAX) {
+					vi = logisticMap(uniformDistribution(generator), 4.0);
+				}
+				population[i].trialVector.push_back(vi);
 			}
-			population[i].trialVector.push_back(vi);
+		}
+	} else if(dist == KENT) {
+		/* Using rand/1 strategy */
+		for(i = 0; i < NP; i++) {
+			population[i].trialVector.clear();
+			for(j = 0; j < population[i].x.size(); j++) {
+				/* Vi = Xrand1 + F * (Xrand2 - Xrand3) */
+				ind1 = ((int)fmod(fabs(kentMap(uniformDistribution(generator), 0.7)),NP));
+				while(ind1 == j) {
+					ind1 = ((int)fmod(fabs(kentMap(uniformDistribution(generator), 0.7)),NP));
+				}
+				ind2 = ((int)fmod(fabs(kentMap(uniformDistribution(generator), 0.7)),NP));
+				while(ind2 == j || ind2 == ind1) {
+					ind2 = ((int)fmod(fabs(kentMap(uniformDistribution(generator), 0.7)),NP));
+				}
+				ind3 = ((int)fmod(fabs(kentMap(uniformDistribution(generator), 0.7)),NP));
+				while(ind3 == j || ind3 == ind1 || ind3 == ind2) {
+					ind3 = ((int)fmod(fabs(kentMap(uniformDistribution(generator), 0.7)),NP));
+				}
+				double vi = population[i].x[ind1] + population[i].F * (population[i].x[ind2] - population[i].x[ind3]);
+				while(vi < FUNC_MIN || vi > FUNC_MAX) {
+					vi = kentMap(uniformDistribution(generator), 0.7);
+				}
+				population[i].trialVector.push_back(vi);
+			}
 		}
 	}
 
 }
 	
-void jDE::crossoverOperation() {
-	int i, j;
+void jDE::crossoverOperation(int dist) {
+	int i, j, jrand;
 	unsigned seed = chrono::system_clock::now().time_since_epoch().count();
 	default_random_engine generator(seed);
-	uniform_real_distribution<double> distribution(0.0,1.0);
-	uniform_int_distribution<int> secondDistribution(0,NP);
-	double jrand;
+	//uniform_real_distribution<double> distribution(0.0,1.0);
+	//uniform_int_distribution<int> secondDistribution(0,NP);
+	uniform_real_distribution<double> uniformDistribution(0.0,1.0);
+	uniform_real_distribution<double> secondDistribution(0.0,(double)NP);
+	normal_distribution<double> normalDistribution(0.0,1.0);
+	cauchy_distribution<double> cauchyDistribution(0.0,2.0);
+	double rand;
 
 	/* Binary crossover */
 	for(i = 0; i < NP; i++) {
-		jrand = secondDistribution(generator);
+		if(dist == UNIFORM) {
+			jrand = (int)secondDistribution(generator);
+		} else if(dist == GAUSSIAN) {
+			jrand = (int)normalDistribution(generator);
+			jrand = abs(jrand) % NP;
+		} else if(dist == CAUCHY) {
+			jrand = (int)cauchyDistribution(generator);
+			jrand = abs(jrand) % NP;
+		} else if(dist == LOGISTIC) {
+			jrand = (int)normalDistribution(generator);
+			jrand = logisticMap(jrand, 4.0);
+			jrand = abs(jrand) % NP;
+		} else if(dist == KENT) {
+			jrand = (int)normalDistribution(generator);
+			jrand = kentMap(jrand, 0.7);
+			jrand = abs(jrand) % NP;
+		}
+
 		for(j = 0; j < population[i].x.size(); j++) {
-			if(distribution(generator) <= population[i].CR || j == jrand) {
+
+
+			if(dist == UNIFORM) {
+				rand = uniformDistribution(generator);
+			} else if(dist == GAUSSIAN) {
+				rand = normalDistribution(generator);
+				rand = (fmod(fabs(rand),RAND_MAX));
+			} else if(dist == CAUCHY) {
+				rand = cauchyDistribution(generator);
+				rand = (fmod(fabs(rand),RAND_MAX));
+			} else if(dist == LOGISTIC) {
+				rand = secondDistribution(generator);
+				rand = logisticMap(rand, 4.0);
+				rand = (fmod(fabs(rand),RAND_MAX));
+			} else if(dist == KENT) {
+				rand = secondDistribution(generator);
+				rand = kentMap(rand, 0.7);
+				rand = (fmod(fabs(rand),RAND_MAX));
+			}
+
+			if(rand <= population[i].CR || j == jrand) {
 				population[i].trialVector[j] = population[i].trialVector[j];
 			} else {
 				population[i].trialVector[j] = population[i].x[j];
@@ -243,7 +401,7 @@ void jDE::selectionOperation() {
 	int i, j;
 
 	for(i = 0; i < NP; i++) {
-		if(sphereFunction(population[i].trialVector) < sphereFunction(population[i].x)) {
+		if(ackleyFunction(population[i].trialVector) < ackleyFunction(population[i].x)) {
 			population[i].x.clear();
 			population[i].x = population[i].trialVector;
 		} else {
