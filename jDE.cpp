@@ -18,18 +18,20 @@ double jDE::calculateNewF(double Fi, int dist) {
 
 	double rand, rand2;
 	unsigned seed = chrono::system_clock::now().time_since_epoch().count();
-	default_random_engine generator(seed);
+	mt19937 generator(seed);
 
 	if(dist == UNIFORM) {
 		uniform_real_distribution<double> distribution(0.0,1.0);
 		rand = distribution(generator);
 		rand2 = distribution(generator);
 	} else if(dist == GAUSSIAN) {
-		normal_distribution<double> distribution(0.0,1.0);
+		uniform_real_distribution<double> secondDistribution(FUNC_MIN,FUNC_MAX);
+		normal_distribution<double> distribution(secondDistribution(generator),1.0);
 		rand = distribution(generator);
 		rand2 = distribution(generator);
 	} else if(dist == CAUCHY) {
-		cauchy_distribution<double> distribution(0.0,2.0);
+		uniform_real_distribution<double> secondDistribution(FUNC_MIN,FUNC_MAX);
+		cauchy_distribution<double> distribution(secondDistribution(generator),1.0);
 		rand = distribution(generator);
 		rand2 = distribution(generator);
 	} else if(dist == LOGISTIC) {
@@ -63,18 +65,20 @@ double jDE::calculateNewCR(double CRi, int dist) {
 
 	double rand, rand2;
 	unsigned seed = chrono::system_clock::now().time_since_epoch().count();
-	default_random_engine generator(seed);
+	mt19937 generator(seed);
 
 	if(dist == UNIFORM) {
 		uniform_real_distribution<double> distribution(0.0,1.0);
 		rand = distribution(generator);
 		rand2 = distribution(generator);
 	} else if(dist == GAUSSIAN) {
-		normal_distribution<double> distribution(0.0,1.0);
+		uniform_real_distribution<double> secondDistribution(FUNC_MIN,FUNC_MAX);
+		normal_distribution<double> distribution(secondDistribution(generator),1.0);
 		rand = distribution(generator);
 		rand2 = distribution(generator);
 	} else if(dist == CAUCHY) {
-		cauchy_distribution<double> distribution(0.0,2.0);
+		uniform_real_distribution<double> secondDistribution(FUNC_MIN,FUNC_MAX);
+		cauchy_distribution<double> distribution(secondDistribution(generator),1.0);
 		rand = distribution(generator);
 		rand2 = distribution(generator);
 	} else if(dist == LOGISTIC) {
@@ -110,7 +114,7 @@ void jDE::initPopulation(int numberDim, int dist, int generations) {
 	vector<double> x;
 	Individual ind;
 	unsigned seed = chrono::system_clock::now().time_since_epoch().count();
-	default_random_engine generator(seed);
+	mt19937 generator(seed);
 	double rand;
 	
 	/* Initializing parameters F and CR */
@@ -124,14 +128,16 @@ void jDE::initPopulation(int numberDim, int dist, int generations) {
 				uniform_real_distribution<double> distribution(FUNC_MIN,FUNC_MAX);
 				x.push_back(distribution(generator));
 			} else if(dist == GAUSSIAN) {
-				normal_distribution<double> distribution(0.0,1.0);
+				uniform_real_distribution<double> secondDistribution(FUNC_MIN,FUNC_MAX);
+				normal_distribution<double> distribution(secondDistribution(generator),1.0);
 				rand = distribution(generator);
 				while(rand < FUNC_MIN || rand > FUNC_MAX) {
 					rand = distribution(generator);
 				}
 				x.push_back(rand);
 			} else if(dist == CAUCHY) {
-				cauchy_distribution<double> distribution(0.0,2.0);
+				uniform_real_distribution<double> secondDistribution(FUNC_MIN,FUNC_MAX);
+				cauchy_distribution<double> distribution(secondDistribution(generator),1.0);
 				rand = distribution(generator);
 				while(rand < FUNC_MIN || rand > FUNC_MAX) {
 					rand = distribution(generator);
@@ -143,6 +149,7 @@ void jDE::initPopulation(int numberDim, int dist, int generations) {
 				rand = logisticMap(rand, 4.0);
 				while(rand < FUNC_MIN || rand > FUNC_MAX) {
 					rand = distribution(generator);
+					rand = logisticMap(rand, 4.0);
 				}
 				x.push_back(rand);
 			} else if(dist == KENT) {
@@ -151,6 +158,7 @@ void jDE::initPopulation(int numberDim, int dist, int generations) {
 				rand = kentMap(rand, 0.7);
 				while(rand < FUNC_MIN || rand > FUNC_MAX) {
 					rand = distribution(generator);
+					rand = kentMap(rand, 0.7);
 				}
 				x.push_back(rand);
 			}
@@ -161,7 +169,7 @@ void jDE::initPopulation(int numberDim, int dist, int generations) {
 		ind.x.clear();
 	}
 
-
+	/* Main algorithm */
 	ofstream outdata;
 	outdata.open("Results.ods");
 	for(i = 0; i < generations; i++) {
@@ -183,14 +191,6 @@ void jDE::initPopulation(int numberDim, int dist, int generations) {
 				outdata << endl;			
 			}
 		}
-
-		/*for (int i = 0; i < NP; ++i){
-			for (int j = 0; j < numberDim; ++j){
-				cout << population[i].x[j] << " ";
-			}
-			cout << endl;
-		}
-		cout << endl;*/
 	}
 }
 
@@ -198,11 +198,11 @@ void jDE::mutationOperation(int dist) {
 
 	int i, j, ind1, ind2, ind3;
 	unsigned seed = chrono::system_clock::now().time_since_epoch().count();
-	default_random_engine generator(seed);
+	mt19937 generator(seed);
 	uniform_real_distribution<double> secondDistribution(FUNC_MIN,FUNC_MAX);
 	uniform_real_distribution<double> uniformDistribution(0.0,(double)NP);
-	normal_distribution<double> normalDistribution(0.0,1.0);
-	cauchy_distribution<double> cauchyDistribution(0.0,2.0);
+	normal_distribution<double> normalDistribution(secondDistribution(generator),1.0);
+	cauchy_distribution<double> cauchyDistribution(secondDistribution(generator),1.0);
 
 	if(dist == UNIFORM) {
 		/* Using rand/1 strategy */
@@ -337,13 +337,14 @@ void jDE::mutationOperation(int dist) {
 void jDE::crossoverOperation(int dist) {
 	int i, j, jrand;
 	unsigned seed = chrono::system_clock::now().time_since_epoch().count();
-	default_random_engine generator(seed);
+	mt19937 generator(seed);
 	//uniform_real_distribution<double> distribution(0.0,1.0);
 	//uniform_int_distribution<int> secondDistribution(0,NP);
 	uniform_real_distribution<double> uniformDistribution(0.0,1.0);
 	uniform_real_distribution<double> secondDistribution(0.0,(double)NP);
-	normal_distribution<double> normalDistribution(0.0,1.0);
-	cauchy_distribution<double> cauchyDistribution(0.0,2.0);
+	uniform_real_distribution<double> thirdDistribution(FUNC_MIN,FUNC_MAX);
+	normal_distribution<double> normalDistribution(thirdDistribution(generator),1.0);
+	cauchy_distribution<double> cauchyDistribution(thirdDistribution(generator),1.0);
 	double rand;
 
 	/* Binary crossover */
@@ -357,11 +358,11 @@ void jDE::crossoverOperation(int dist) {
 			jrand = (int)cauchyDistribution(generator);
 			jrand = abs(jrand) % NP;
 		} else if(dist == LOGISTIC) {
-			jrand = (int)normalDistribution(generator);
+			jrand = (int)secondDistribution(generator);
 			jrand = logisticMap(jrand, 4.0);
 			jrand = abs(jrand) % NP;
 		} else if(dist == KENT) {
-			jrand = (int)normalDistribution(generator);
+			jrand = (int)secondDistribution(generator);
 			jrand = kentMap(jrand, 0.7);
 			jrand = abs(jrand) % NP;
 		}
@@ -378,11 +379,11 @@ void jDE::crossoverOperation(int dist) {
 				rand = cauchyDistribution(generator);
 				rand = (fmod(fabs(rand),RAND_MAX));
 			} else if(dist == LOGISTIC) {
-				rand = secondDistribution(generator);
+				rand = uniformDistribution(generator);
 				rand = logisticMap(rand, 4.0);
 				rand = (fmod(fabs(rand),RAND_MAX));
 			} else if(dist == KENT) {
-				rand = secondDistribution(generator);
+				rand = uniformDistribution(generator);
 				rand = kentMap(rand, 0.7);
 				rand = (fmod(fabs(rand),RAND_MAX));
 			}
@@ -401,7 +402,7 @@ void jDE::selectionOperation() {
 	int i, j;
 
 	for(i = 0; i < NP; i++) {
-		if(ackleyFunction(population[i].trialVector) < ackleyFunction(population[i].x)) {
+		if(rosenbrockFunction(population[i].trialVector) < rosenbrockFunction(population[i].x)) {
 			population[i].x.clear();
 			population[i].x = population[i].trialVector;
 		} else {
@@ -489,6 +490,56 @@ double jDE::rosenbrockFunction(vector<double> x) {
     }
 
     return result;
+}
+
+double jDE::schafferFunction(vector<double> x) {
+
+	/* Defining fitness function - Schaffer's function
+	   Dimensions: d
+	   Domain: x ∈ [-100.0, 100.0]
+	   Global minimum: (0, ..., 0)
+	*/
+
+	int numDim = x.size();
+	double sum1 = 0, aux, aux1;
+
+	aux1 = 0;
+    for(int j = 0; j < numDim; j++) {
+    	aux = aux + (pow(x[j],(double)2));
+    }
+
+    aux = pow(aux,(double)0.25);
+
+    for(int j = 0; j < numDim; j++) {
+    	aux1 = aux1 + (pow(x[j],(double)2));
+    }
+
+    aux1 = pow(aux1,(double)0.1);
+    aux1 = pow(sin(50*aux1),(double)2) + 1.0;
+
+    return aux*aux1;
+}
+
+double jDE::griewankFunction(vector<double> x) {
+
+	/* Defining fitness function - Griewank's function
+	   Dimensions: d
+	   Domain: x ∈ [-600.0, 600.0]
+	   Global minimum: (0, ..., 0)
+	*/
+
+	int numDim = x.size();
+	double aux, aux1, aux2 = 0;
+
+    aux = aux1 = 0;
+    aux2 = 1;
+    for(int j = 0; j < numDim; j++) {
+    	aux1 = aux1 + pow((x[j]),(double)2);
+    	aux2 = aux2 * cos((((x[j])/sqrt((double)(j+1)))*M_PI)/180);
+    }
+    aux = (1/(double)4000) * aux1 - aux2 + 1;
+
+    return aux;
 }
 
 double jDE::eggholderFunction(vector<double> x) {

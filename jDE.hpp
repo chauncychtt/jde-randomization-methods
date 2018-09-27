@@ -17,8 +17,8 @@
 #define LOGISTIC 4
 #define KENT 5
 #define RAND_MAX 1.0
-#define FUNC_MIN -32.768 // For the sphere function
-#define FUNC_MAX 32.768 // For the sphere function
+#define FUNC_MIN -5.0 // For the sphere function
+#define FUNC_MAX 10.0 // For the sphere function
 
 #include <random>
 #include <vector>
@@ -58,4 +58,6 @@ public:
 	double rastriginFunction(vector<double> x);
 	double rosenbrockFunction(vector<double> x);
 	double eggholderFunction(vector<double> x);
+	double schafferFunction(vector<double> x);
+	double griewankFunction(vector<double> x);
 };
