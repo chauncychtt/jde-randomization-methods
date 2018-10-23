@@ -173,7 +173,7 @@ void jDE::initPopulation(int numberDim, int dist, int generations) {
 	ofstream outdata;
 	outdata.open("Results.ods");
 	for(i = 0; i < generations; i++) {
-		cout << "Generation: " << i << endl;
+		//cout << "Generation: " << i << endl;
 		for(j = 0; j < NP; j++) {
 			population[j].F = calculateNewF(population[j].F, dist);
 			population[j].CR = calculateNewCR(population[j].CR, dist);
@@ -287,6 +287,7 @@ void jDE::mutationOperation(int dist) {
 			for(j = 0; j < population[i].x.size(); j++) {
 				/* Vi = Xrand1 + F * (Xrand2 - Xrand3) */
 				ind1 = ((int)fmod(fabs(logisticMap(uniformDistribution(generator), 4.0)),NP));
+				cout << ind1 << endl;
 				while(ind1 == j) {
 					ind1 = ((int)fmod(fabs(logisticMap(uniformDistribution(generator), 4.0)),NP));
 				}
