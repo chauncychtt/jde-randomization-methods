@@ -21,7 +21,6 @@ jDE::jDE( uint _s ):
 }
 
 jDE::~jDE(){
-  /* empty */
   gsl_rng_free (r);
 }
 
@@ -78,7 +77,6 @@ void jDE::update(uint dist_id){
 	    r2 = fmod(fabs(gsl_ran_gaussian(r, 1.0)), 1.0);
 	    r3 = fmod(fabs(gsl_ran_gaussian(r, 1.0)), 1.0);
 	    r4 = fmod(fabs(gsl_ran_gaussian(r, 1.0)), 1.0);
-	    //std::cout << r1 << " " << r2 << " " << r3 << " " << r4 << std::endl;
     } else if(dist_id == 3) {
     	r1 = fmod(fabs(gsl_ran_cauchy(r, 1.0)), 1.0);
 	    r2 = fmod(fabs(gsl_ran_cauchy(r, 1.0)), 1.0);
@@ -145,25 +143,17 @@ void jDE::runDE(uint ndim, uint ps, const vDouble& genes, vDouble& n_gen, const 
 	    do n2 = random_i(rng); while (n2 == i || n2 == n1 );
 	    do n3 = random_i(rng); while (n3 == i || n3 == n1 || n3 == n2);
     } else if(dist_id == 2) {
-    	// to do gsl_ran_cauchy(r, 1.0)
     	/* Get three mutually different indexes */
-    	std::cout <<(int)gsl_ran_gaussian(r, ps) << std::endl; 
-	    do n1 = (int)gsl_ran_gaussian(r, ps); while (n1 == i || n1 < 0 || n1 > ps-1);
-	    do n2 = (int)gsl_ran_gaussian(r, ps); while (n2 == i || n2 == n1 || n2 < 0 || n2 > ps-1);
-	    do n3 = (int)gsl_ran_gaussian(r, ps); while (n3 == i || n3 == n1 || n3 == n2 || n3 < 0 || n3 > ps-1);
+	    do n1 = (int)gsl_ran_gaussian(r, ps-1); while (n1 == i || n1 < 0 || n1 > ps-1);
+	    do n2 = (int)gsl_ran_gaussian(r, ps-1); while (n2 == i || n2 == n1 || n2 < 0 || n2 > ps-1);
+	    do n3 = (int)gsl_ran_gaussian(r, ps-1); while (n3 == i || n3 == n1 || n3 == n2 || n3 < 0 || n3 > ps-1);
     } else if(dist_id == 3) {
-    	// to do
     	/* Get three mutually different indexes */
-    	std::cout <<(int)gsl_ran_cauchy(r, ps) << std::endl;
-    	//do n1 = random_i(rng); while (n1 == i);
-	    //do n2 = random_i(rng); while (n2 == i || n2 == n1 );
-	    //do n3 = random_i(rng); while (n3 == i || n3 == n1 || n3 == n2);
-	    do n1 = (int)gsl_ran_cauchy(r, ps); while (n1 == i|| n1 < 0 || n1 > ps-1);
-	    do n2 = (int)gsl_ran_cauchy(r, ps); while (n2 == i || n2 == n1 || n2 < 0 || n2 > ps-1);
-	    do n3 = (int)gsl_ran_cauchy(r, ps); while (n3 == i || n3 == n1 || n3 == n2 || n3 < 0 || n3 > ps-1);
+	    do n1 = (int)gsl_ran_cauchy(r, ps-1); while (n1 == i|| n1 < 0 || n1 > ps-1);
+	    do n2 = (int)gsl_ran_cauchy(r, ps-1); while (n2 == i || n2 == n1 || n2 < 0 || n2 > ps-1);
+	    do n3 = (int)gsl_ran_cauchy(r, ps-1); while (n3 == i || n3 == n1 || n3 == n2 || n3 < 0 || n3 > ps-1);
     } else if(dist_id == 4) {
-    	/* Get three mutually different indexes */
-    	//std::cout <<logisticMap(random(rng), 4.0) << std:: endl;  
+    	/* Get three mutually different indexes */  
 	    do n1 = (int)remap(logisticMap(random(rng), 4.0), 0.0, 1.0, 0.0, ps-1); while (n1 == i);
 	    do n2 = (int)remap(logisticMap(random(rng), 4.0), 0.0, 1.0, 0.0, ps-1); while (n2 == i || n2 == n1);
 	    do n3 = (int)remap(logisticMap(random(rng), 4.0), 0.0, 1.0, 0.0, ps-1); while (n3 == i || n3 == n1 || n3 == n2);
@@ -182,22 +172,16 @@ void jDE::runDE(uint ndim, uint ps, const vDouble& genes, vDouble& n_gen, const 
     for( j = 0; j < ndim; j++ ){
 
       if(dist_id == 1) {
-     	rand_num = random(rng);
+     	  rand_num = random(rng);
       } else if(dist_id == 2) {
-    	rand_num = fmod(fabs(gsl_ran_gaussian(r, 1.0)), 1.0);
+    	 rand_num = fmod(fabs(gsl_ran_gaussian(r, 1.0)), 1.0);
       } else if(dist_id == 3) {
-      	//std::cout <<fmod(fabs(gsl_ran_cauchy(r, 1.0)), 0.99) << std::endl;
-      	//std::cout <<random(rng) << std::endl;
-      	//rand_num = random(rng);
-    	rand_num = fmod(fabs(gsl_ran_cauchy(r, 1.0)), 1.0);
-    	//rand_num = random(rng);
+    	 rand_num = fmod(fabs(gsl_ran_cauchy(r, 1.0)), 1.0);
       } else if(dist_id == 4) {
-    	rand_num = logisticMap(random(rng), 4.0);
+    	 rand_num = logisticMap(random(rng), 4.0);
       } else if(dist_id == 5) {
-    	rand_num = kentMap(random(rng), 0.7);
+    	 rand_num = kentMap(random(rng), 0.7);
       }
-
-      /*rand = (fmod(fabs(rand),RAND_MAX));*/
 
       if( (rand_num <= myCR) || ( j == (ndim-1) ) ){
         n_gen[i * ndim + j] = genes[n1 * ndim + j] + myF * ( genes[ n2 * ndim + j] - genes[n3 * ndim + j]);

@@ -5,9 +5,9 @@ SRCS = $(wildcard $(SRC_PATH)/*.cpp)
 
 OBJS = $(patsubst %.cpp, $(OBJ_PATH)/%.o, $(notdir $(SRCS)))
 
-CC = g++ -std=c++17 -O3 -g
+CC = g++ -std=c++11 -O3 -g
 
-BOOST_FLAG = -lboost_program_options -lgsl -lgslcblas -lm
+BOOST_FLAG = -lboost_program_options -lgsl -lgslcblas -lm -lboost_iostreams -lboost_system -lboost_filesystem
 
 all: demo
 

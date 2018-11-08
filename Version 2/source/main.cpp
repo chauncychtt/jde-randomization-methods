@@ -17,6 +17,8 @@
 #include "F3.h"
 #include "F4.h"
 
+#include "../gnuplot-iostream/gnuplot-iostream.h"
+
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 
@@ -103,6 +105,10 @@ int main(int argc, char * argv[]){
     const gsl_rng_type *T;
   	gsl_rng *r;
 
+    /* Gnuplot stuff */
+    Gnuplot gp;
+    std::vector< std::pair<double, double> > graph;
+
   	gsl_rng_env_setup();
  
   	T = gsl_rng_default;
@@ -114,9 +120,9 @@ int main(int argc, char * argv[]){
                 ("runs,r"    , po::value<uint>(&n_runs)->default_value(1)    , "Number of Executions" )
                 ("pop_size,p", po::value<uint>(&NP)->default_value(50)       , "Population Size"      )
                 ("dim,d"     , po::value<uint>(&n_dim)->default_value(100)    , "Number of Dimensions" )
-                ("func_obj,o", po::value<uint>(&f_id)->default_value(2)      , "Function to Optimize" )
-                ("dist_name,m", po::value<uint>(&dist_id)->default_value(2)      , "Distribution" )
-                ("max_eval,e", po::value<uint>(&max_evals)->default_value(1000000), "Number of Function Evaluations")
+                ("func_obj,o", po::value<uint>(&f_id)->default_value(1)      , "Function to Optimize" )
+                ("dist_name,m", po::value<uint>(&dist_id)->default_value(4)      , "Distribution" )
+                ("max_eval,e", po::value<uint>(&max_evals)->default_value(100000), "Number of Function Evaluations")
                 ("help,h", "Help");
 
         po::options_description cmdline_options;
@@ -206,11 +212,13 @@ int main(int argc, char * argv[]){
 
             for( int i = 0; i < NP; i++ ){
                 n_fitness[i] = B->compute(n_gen, i * n_dim);
-                nfes++;
-                if( nfes >= max_evals ) break;
+                //nfes++;
+                //if( nfes >= max_evals ) break;
             }
-
             jde->selection(n_dim, NP, gen, n_gen, fitness, n_fitness);
+            best = *std::min_element(gen.begin(),gen.end());
+            graph.push_back(std::make_pair(nfes, best));
+            nfes++;
         }
         best = *std::min_element(fitness.begin(),fitness.end());
         tend = stime();
@@ -220,6 +228,10 @@ int main(int argc, char * argv[]){
         printf(" | Execution: %-2d Overall Best: %+.8lf Time(s): %.8f\n", go, best, tend-tini);
         stats.push_back(std::make_pair(best, tend-tini));
     }
+
+    gp << "set yrange [" << x_min << ":" << x_max << "]\nset xrange [0:100000]\n";
+    gp << "plot '-' with lines title 'graph'\n";
+    gp.send1d(graph);
 
     gsl_rng_free (r);
     
